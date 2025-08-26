@@ -1,0 +1,342 @@
+ptime availability
+- Automated backup every 6 hours
+- Disaster recovery plan with RTO < 4 hours
+- Data redundancy across multiple zones
+- Graceful error handling with user-friendly messages
+
+### 3.5 Scalability Requirements
+- Horizontal scaling capability
+- Database connection pooling
+- Caching strategy for frequently accessed data
+- CDN integration for static assets
+- Microservices-ready architecture
+
+---
+
+## 4. BUSINESS RULES
+
+### 4.1 Member Management Rules
+1. Employee ID must be unique across the system
+2. Members cannot be deleted if they have associated readings or encounters
+3. Member age must be calculated dynamically from date of birth
+4. Union affiliation is required and cannot be null
+
+### 4.2 Blood Pressure Rules
+1. Systolic pressure must be between 70-300 mmHg
+2. Diastolic pressure must be between 40-200 mmHg
+3. Systolic must be greater than diastolic
+4. HTN status must be automatically calculated and cannot be manually overridden
+5. Readings cannot be backdated more than 30 days
+6. Heart rate, if provided, must be between 30-250 bpm
+
+### 4.3 Communication Rules
+1. Session numbers must be sequential per member
+2. Follow-up dates cannot be in the past when scheduling
+3. Encounters marked as completed cannot be edited
+4. Priority levels are automatically assigned based on HTN status
+5. Members with Crisis status must appear at top of call lists
+
+### 4.4 Analytics Rules
+1. Metrics refresh every 15 minutes
+2. Historical data retained for minimum 7 years
+3. Trend calculations require minimum 3 data points
+4. Percentage calculations exclude members with no readings
+5. ROI calculations updated monthly
+
+### 4.5 Data Retention Rules
+1. Active member data retained indefinitely
+2. Inactive member data archived after 2 years
+3. Deleted records soft-deleted with 90-day recovery window
+4. Audit logs retained for 7 years
+5. Analytics snapshots stored monthly for historical comparison
+
+---
+
+## 5. DATA MODEL
+
+### 5.1 Core Entities
+
+#### Members Table
+```
+- id: UUID (Primary Key)
+- employeeId: String (Unique, Required)
+- firstName: String (Required)
+- lastName: String (Required)
+- dateOfBirth: DateTime (Required)
+- gender: String (Required)
+- union: String (Required) [Firefighters|Police|EMS]
+- createdAt: DateTime
+- updatedAt: DateTime
+```
+
+#### Blood Pressure Readings Table
+```
+- id: UUID (Primary Key)
+- memberId: UUID (Foreign Key -> Members)
+- systolic: Integer (Required)
+- diastolic: Integer (Required)
+- heartRate: Integer (Optional)
+- readingDate: DateTime (Required)
+- htnStatus: String (Required) [Normal|Elevated|Stage 1|Stage 2|Crisis]
+- createdAt: DateTime
+```
+
+#### Encounters Table
+```
+- id: UUID (Primary Key)
+- memberId: UUID (Foreign Key -> Members)
+- sessionNumber: Integer (Required)
+- communicationType: String (Required) [Phone|Text|Email|In-Person]
+- topic: String (Required)
+- content: Text (Required)
+- callStatus: String (Required)
+- callerName: String (Required)
+- encounterDate: DateTime (Required)
+- isCompleted: Boolean (Default: false)
+- createdAt: DateTime
+```
+
+#### Medical History Table
+```
+- id: UUID (Primary Key)
+- memberId: UUID (Foreign Key -> Members)
+- condition: String (Required)
+- notes: Text (Optional)
+- reportedDate: DateTime (Required)
+- createdAt: DateTime
+```
+
+### 5.2 Relationships
+- Members (1) -> Blood Pressure Readings (Many)
+- Members (1) -> Encounters (Many)
+- Members (1) -> Medical History (Many)
+
+---
+
+## 6. TECHNICAL ARCHITECTURE
+
+### 6.1 Frontend Stack
+- **Framework**: React 18 with TypeScript
+- **Routing**: Wouter (lightweight SPA routing)
+- **State Management**: Zustand
+- **UI Components**: Shadcn/ui (Radix UI primitives)
+- **Styling**: Tailwind CSS
+- **Data Fetching**: TanStack Query v5
+- **Charts**: Recharts
+- **Forms**: React Hook Form + Zod validation
+- **Build Tool**: Vite
+
+### 6.2 Backend Stack
+- **Runtime**: Node.js
+- **Framework**: Express.js
+- **Language**: TypeScript
+- **Database**: PostgreSQL (Neon serverless)
+- **ORM**: Drizzle ORM
+- **Session Management**: Express-session
+- **API Design**: RESTful
+
+### 6.3 Infrastructure
+- **Hosting**: Replit deployment platform
+- **Database**: Neon Database (serverless PostgreSQL)
+- **Domain**: .replit.app or custom domain
+- **SSL/TLS**: Automatic HTTPS
+- **Monitoring**: Built-in health checks
+
+### 6.4 Development Tools
+- **Version Control**: Git
+- **Package Management**: npm
+- **Type Checking**: TypeScript
+- **Code Formatting**: Prettier
+- **Linting**: ESLint
+- **Hot Reload**: Vite HMR
+
+---
+
+## 7. API ENDPOINTS
+
+### 7.1 Member Endpoints
+- `GET /api/members` - List all members
+- `GET /api/members/:id` - Get specific member
+- `POST /api/members` - Create new member
+- `PUT /api/members/:id` - Update member
+- `DELETE /api/members/:id` - Delete member
+
+### 7.2 Blood Pressure Endpoints
+- `GET /api/blood-pressure-readings` - List all readings
+- `GET /api/members/:memberId/blood-pressure-readings` - Get member's readings
+- `POST /api/blood-pressure-readings` - Create new reading
+- `PUT /api/blood-pressure-readings/:id` - Update reading
+- `DELETE /api/blood-pressure-readings/:id` - Delete reading
+
+### 7.3 Encounter Endpoints
+- `GET /api/encounters` - List all encounters
+- `GET /api/members/:memberId/encounters` - Get member's encounters
+- `POST /api/encounters` - Create new encounter
+- `PUT /api/encounters/:id` - Update encounter
+- `DELETE /api/encounters/:id` - Delete encounter
+
+### 7.4 Medical History Endpoints
+- `GET /api/members/:memberId/medical-history` - Get member's medical history
+- `POST /api/medical-history` - Create medical history entry
+
+### 7.5 Analytics Endpoints
+- `GET /api/analytics` - Get all analytics data
+- `GET /api/analytics/members` - Get member-specific analytics
+- `GET /api/analytics/clinical` - Clinical outcomes data
+- `GET /api/analytics/engagement` - Engagement metrics
+- `GET /api/analytics/lifestyle` - Lifestyle metrics
+- `GET /api/analytics/equity` - Equity metrics
+- `GET /api/analytics/impact` - Program impact metrics
+
+---
+
+## 8. DEPLOYMENT AND MAINTENANCE
+
+### 8.1 Deployment Process
+1. Code pushed to repository
+2. Automatic build triggered via Vite
+3. Database migrations via Drizzle Kit (`npm run db:push`)
+4. Application deployed to Replit hosting
+5. Health checks verify deployment
+6. SSL certificate automatically provisioned
+
+### 8.2 Environment Variables
+Required environment variables:
+- `DATABASE_URL` - PostgreSQL connection string
+- `NODE_ENV` - Environment (development/production)
+- `SESSION_SECRET` - Session encryption key (future)
+
+### 8.3 Maintenance Tasks
+- Daily database backups
+- Weekly performance monitoring review
+- Monthly analytics report generation
+- Quarterly security audit
+- Annual disaster recovery drill
+
+### 8.4 Monitoring and Logging
+- API request/response logging
+- Error tracking and alerting
+- Performance metrics collection
+- User activity auditing
+- Database query performance monitoring
+
+---
+
+## 9. FUTURE ENHANCEMENTS
+
+### 9.1 Planned Features
+1. Mobile application (iOS/Android)
+2. SMS/Email notification system
+3. Wearable device integration
+4. Predictive analytics using ML
+5. Telemedicine integration
+6. Multi-language support
+7. Advanced scheduling system
+8. Automated report generation
+9. API for third-party integrations
+10. Real-time collaboration features
+
+### 9.2 Authentication & Authorization
+- OAuth 2.0 integration
+- Multi-factor authentication
+- Single Sign-On (SSO)
+- Role-based permissions
+- API key management
+
+### 9.3 Advanced Analytics
+- Machine learning risk prediction
+- Cohort analysis
+- A/B testing framework
+- Custom report builder
+- Data export capabilities
+
+---
+
+## 10. COMPLIANCE AND STANDARDS
+
+### 10.1 Healthcare Compliance
+- HIPAA compliance for PHI protection
+- HL7 FHIR standards for interoperability
+- AHA guidelines for HTN classification
+- CDC recommendations for prevention programs
+
+### 10.2 Accessibility Standards
+- WCAG 2.1 AA compliance
+- Section 508 compliance
+- ADA requirements
+- Screen reader compatibility
+- Keyboard navigation support
+
+### 10.3 Data Standards
+- ISO 8601 for date/time formats
+- UTF-8 encoding for all text
+- REST API design principles
+- JSON for data exchange
+- Semantic versioning for APIs
+
+---
+
+## APPENDIX A: GLOSSARY
+
+- **HTN**: Hypertension (High Blood Pressure)
+- **BP**: Blood Pressure
+- **RPM**: Remote Patient Monitoring
+- **ASCVD**: Atherosclerotic Cardiovascular Disease
+- **PHI**: Protected Health Information
+- **ROI**: Return on Investment
+- **QALY**: Quality-Adjusted Life Year
+- **EMS**: Emergency Medical Services
+- **VM**: Voicemail
+- **KPI**: Key Performance Indicator
+
+---
+
+## APPENDIX B: VALIDATION RULES
+
+### Blood Pressure Validation
+- Systolic: 70-300 mmHg
+- Diastolic: 40-200 mmHg
+- Heart Rate: 30-250 bpm
+- Date: Not more than 30 days in the past
+
+### Member Data Validation
+- Age: 18-100 years
+- Name: 2-50 characters, letters only
+- Employee ID: Alphanumeric, 4-20 characters
+- Phone: Valid format (if implemented)
+- Email: Valid format (if implemented)
+
+### Encounter Validation
+- Session Number: Positive integer
+- Content: 10-5000 characters
+- Topic: 3-200 characters
+- Caller Name: 2-100 characters
+
+---
+
+## APPENDIX C: ERROR CODES
+
+### API Error Codes
+- 200: Success
+- 201: Created
+- 400: Bad Request (Invalid Data)
+- 401: Unauthorized
+- 403: Forbidden
+- 404: Not Found
+- 409: Conflict (Duplicate)
+- 500: Internal Server Error
+- 503: Service Unavailable
+
+### Business Logic Error Codes
+- BP001: Invalid blood pressure reading
+- BP002: Reading date in future
+- MEM001: Duplicate employee ID
+- MEM002: Invalid age
+- ENC001: Invalid session number
+- ENC002: Encounter already completed
+- ANA001: Insufficient data for analysis
+- ANA002: Date range too large
+
+---
+
+This document serves as the comprehensive requirements specification for rebuilding or maintaining the Hypertension Prevention Program for First Responders. All features, business rules, and technical specifications outlined here represent the current state of the application and should be used as the authoritative reference for development, testing, and deployment activities.

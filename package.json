@@ -1,0 +1,23 @@
+{
+  "name": "htn-prevention-app",
+  "version": "1.0.0",
+  "description": "Hypertension Prevention Program for First Responders",
+  "main": "server/index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently \"npm run server:dev\" \"npm run client:dev\"",
+    "server:dev": "cd server && npm run dev",
+    "client:dev": "cd client && npm run dev",
+    "build": "cd client && npm run build",
+    "start": "cd server && npm start",
+    "db:push": "cd server && npm run db:push",
+    "db:studio": "cd server && npm run db:studio"
+  },
+  "keywords": ["hypertension", "healthcare", "first-responders"],
+  "author": "jeffbander",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
+
