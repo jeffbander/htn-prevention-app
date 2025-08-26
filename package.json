@@ -11,13 +11,28 @@
     "build": "cd client && npm run build",
     "start": "cd server && npm start",
     "db:push": "cd server && npm run db:push",
-    "db:studio": "cd server && npm run db:studio"
+    "db:studio": "cd server && npm run db:studio",
+    "test": "node test-workflow.js",
+    "test:backend": "cd server && npm test",
+    "test:frontend": "cd client && pnpm test",
+    "test:integration": "node test-workflow.js",
+    "test:coverage": "npm run test:backend:coverage && npm run test:frontend:coverage",
+    "test:backend:coverage": "cd server && npm run test:coverage",
+    "test:frontend:coverage": "cd client && pnpm run test:coverage",
+    "lint": "npm run lint:client",
+    "lint:client": "cd client && pnpm run lint"
   },
-  "keywords": ["hypertension", "healthcare", "first-responders"],
+  "keywords": [
+    "hypertension",
+    "healthcare",
+    "first-responders"
+  ],
   "author": "jeffbander",
   "license": "MIT",
   "devDependencies": {
     "concurrently": "^8.2.2"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.2.0"
   }
 }
-
