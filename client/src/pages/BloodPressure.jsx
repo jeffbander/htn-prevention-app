@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -33,6 +33,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Heart, TrendingUp, TrendingDown, AlertTriangle } from 'lucide-react';
 import { bloodPressureAPI, membersAPI } from '@/services/api';
+import BluetoothScanner from '@/components/BluetoothScanner';
+import BluetoothStatus from '@/components/BluetoothStatus';
+import BluetoothReading from '@/components/BluetoothReading';
+import { useBluetooth } from '@/hooks/useBluetooth';
+import { Bluetooth } from 'lucide-react';
 
 const HTN_STATUS_COLORS = {
   Normal: 'bg-green-100 text-green-800',
@@ -50,7 +55,7 @@ const HTN_STATUS_ICONS = {
   Crisis: AlertTriangle
 };
 
-function BloodPressureForm({ reading, onSuccess, onCancel }) {
+function BloodPressureForm({ reading, onSuccess, onCancel, bluetoothMeasurement }) {
   const [formData, setFormData] = useState({
     memberId: reading?.memberId || '',
     systolic: reading?.systolic || '',
@@ -131,6 +136,18 @@ function BloodPressureForm({ reading, onSuccess, onCancel }) {
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
+
+  // Handle Bluetooth measurement
+  useEffect(() => {
+    if (bluetoothMeasurement) {
+      setFormData(prev => ({
+        ...prev,
+        systolic: bluetoothMeasurement.systolic.toString(),
+        diastolic: bluetoothMeasurement.diastolic.toString(),
+        heartRate: bluetoothMeasurement.heartRate ? bluetoothMeasurement.heartRate.toString() : prev.heartRate
+      }));
+    }
+  }, [bluetoothMeasurement]);
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -268,9 +285,38 @@ export default function BloodPressure() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingReading, setEditingReading] = useState(null);
   const [filterStatus, setFilterStatus] = useState('all');
+  const [showBluetooth, setShowBluetooth] = useState(false);
+  const [bluetoothReading, setBluetoothReading] = useState(null);
+  const [selectedMemberId, setSelectedMemberId] = useState(null);
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // Bluetooth hook
+  const {
+    isSupported: isBluetoothSupported,
+    isConnected: isBluetoothConnected,
+    device: bluetoothDevice,
+    lastMeasurement,
+    connect: connectBluetooth,
+    disconnect: disconnectBluetooth
+  } = useBluetooth({
+    onMeasurement: (measurement) => {
+      console.log('Received Bluetooth measurement:', measurement);
+      setBluetoothReading(measurement.raw);
+      toast({
+        title: 'Bluetooth Reading Received',
+        description: `BP: ${measurement.systolic}/${measurement.diastolic} mmHg`,
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: 'Bluetooth Error',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
+  });
 
   const { data: readings, isLoading } = useQuery({
     queryKey: ['bloodPressure'],
@@ -313,6 +359,13 @@ export default function BloodPressure() {
   const handleDialogClose = () => {
     setDialogOpen(false);
     setEditingReading(null);
+    setBluetoothReading(null);
+    setShowBluetooth(false);
+  };
+
+  const handleBluetoothClick = () => {
+    setShowBluetooth(true);
+    setDialogOpen(true);
   };
 
   // Calculate statistics
@@ -362,27 +415,78 @@ export default function BloodPressure() {
           </p>
         </div>
         
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={() => setEditingReading(null)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Record Reading
+        <div className="flex gap-2 items-center">
+          {/* Bluetooth Status */}
+          {isBluetoothSupported && (
+            <BluetoothStatus
+              compact={true}
+              onConnect={() => console.log('Connected')}
+              onDisconnect={() => setBluetoothReading(null)}
+            />
+          )}
+          
+          {/* Bluetooth Button */}
+          {isBluetoothSupported && !isBluetoothConnected && (
+            <Button variant="outline" onClick={handleBluetoothClick}>
+              <Bluetooth className="h-4 w-4 mr-2" />
+              Connect Device
             </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl">
+          )}
+          
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button onClick={() => setEditingReading(null)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Record Reading
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>
-                {editingReading ? 'Edit Reading' : 'Record Blood Pressure'}
+                {showBluetooth ? 'Bluetooth Blood Pressure' : editingReading ? 'Edit Reading' : 'Record Blood Pressure'}
               </DialogTitle>
               <DialogDescription>
-                {editingReading ? 'Update blood pressure reading' : 'Record a new blood pressure measurement'}
+                {showBluetooth ? 'Connect to a Bluetooth blood pressure monitor' : editingReading ? 'Update blood pressure reading' : 'Record a new blood pressure measurement'}
               </DialogDescription>
             </DialogHeader>
-            <BloodPressureForm
-              reading={editingReading}
-              onSuccess={handleDialogClose}
-              onCancel={handleDialogClose}
-            />
+            {showBluetooth ? (
+              <div className="space-y-4">
+                {!isBluetoothConnected ? (
+                  <BluetoothScanner
+                    onDeviceConnected={(device) => {
+                      console.log('Device connected:', device);
+                      toast({
+                        title: 'Device Connected',
+                        description: `Connected to ${device.name || 'Unknown Device'}`,
+                      });
+                    }}
+                    onError={(error) => {
+                      console.error('Scanner error:', error);
+                    }}
+                  />
+                ) : (
+                  <BluetoothReading
+                    memberId={selectedMemberId}
+                    onSave={(measurement) => {
+                      setBluetoothReading(measurement);
+                      setShowBluetooth(false);
+                      // The form will auto-populate with the measurement
+                    }}
+                    onCancel={() => {
+                      setShowBluetooth(false);
+                      setBluetoothReading(null);
+                    }}
+                  />
+                )}
+              </div>
+            ) : (
+              <BloodPressureForm
+                reading={editingReading}
+                onSuccess={handleDialogClose}
+                onCancel={handleDialogClose}
+                bluetoothMeasurement={bluetoothReading}
+              />
+            )}
           </DialogContent>
         </Dialog>
       </div>
@@ -493,6 +597,7 @@ export default function BloodPressure() {
           </Table>
         </CardContent>
       </Card>
+    </div>
     </div>
   );
 }
