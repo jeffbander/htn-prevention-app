@@ -6,9 +6,10 @@ dotenv.config();
 export default defineConfig({
   schema: './src/db/schema.ts',
   out: './drizzle',
-  dialect: 'postgresql',
+  dialect: 'sqlite',
+  driver: 'better-sqlite',
   dbCredentials: {
-    url: process.env.DATABASE_URL || 'postgresql://localhost:5432/htn_prevention'
+    url: './database.db'
   }
 });
 

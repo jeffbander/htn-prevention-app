@@ -8,6 +8,8 @@ import { bloodPressureRouter } from './routes/bloodPressure.js';
 import { encountersRouter } from './routes/encounters.js';
 import { medicalHistoryRouter } from './routes/medicalHistory.js';
 import { analyticsRouter } from './routes/analytics.js';
+import authRouter from './routes/auth.js';
+import { adminAnalyticsRouter } from './routes/adminAnalytics.js';
 
 dotenv.config();
 
@@ -36,11 +38,13 @@ app.get('/health', (req, res) => {
 });
 
 // API Routes
+app.use('/api/auth', authRouter);
 app.use('/api/members', membersRouter);
 app.use('/api/blood-pressure-readings', bloodPressureRouter);
 app.use('/api/encounters', encountersRouter);
 app.use('/api/medical-history', medicalHistoryRouter);
 app.use('/api/analytics', analyticsRouter);
+app.use('/api/admin', adminAnalyticsRouter);
 
 // Error handling middleware
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

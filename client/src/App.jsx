@@ -7,6 +7,8 @@ import Members from '@/pages/Members';
 import BloodPressure from '@/pages/BloodPressure';
 import Encounters from '@/pages/Encounters';
 import Analytics from '@/pages/Analytics';
+import Login from '@/pages/Login';
+import AdminDashboard from '@/pages/AdminDashboard';
 import './App.css';
 
 const queryClient = new QueryClient({
@@ -23,15 +25,22 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <Router>
         <div className="min-h-screen bg-background">
-          <Layout>
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/members" element={<Members />} />
-              <Route path="/blood-pressure" element={<BloodPressure />} />
-              <Route path="/encounters" element={<Encounters />} />
-              <Route path="/analytics" element={<Analytics />} />
-            </Routes>
-          </Layout>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/admin-dashboard" element={<AdminDashboard />} />
+            <Route path="/*" element={
+              <Layout>
+                <Routes>
+                  <Route path="/" element={<Dashboard />} />
+                  <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/members" element={<Members />} />
+                  <Route path="/blood-pressure" element={<BloodPressure />} />
+                  <Route path="/encounters" element={<Encounters />} />
+                  <Route path="/analytics" element={<Analytics />} />
+                </Routes>
+              </Layout>
+            } />
+          </Routes>
           <Toaster />
         </div>
       </Router>

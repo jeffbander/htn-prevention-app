@@ -10,12 +10,18 @@ A comprehensive web application for managing hypertension prevention programs sp
 - **Communication Tracking**: Log encounters and follow-up sessions
 - **Medical History**: Maintain comprehensive health records
 - **Analytics Dashboard**: Real-time insights and program metrics
+- **🆕 User Authentication**: JWT-based login system with role management
+- **🆕 Super Admin Dashboard**: Comprehensive administrative oversight and analytics
 
 ### Key Capabilities
 - **Automated HTN Classification**: Follows AHA guidelines (Normal, Elevated, Stage 1, Stage 2, Crisis)
 - **Risk Assessment**: Automatic categorization and priority alerts
 - **Engagement Tracking**: Monitor participation and follow-up compliance
 - **Union-Based Analytics**: Separate insights for Firefighters, Police, and EMS
+- **🆕 Role-Based Access Control**: User, Admin, and Super Admin roles
+- **🆕 Daily Readings Tracking**: Real-time monitoring of daily BP readings by union
+- **🆕 Enrollment Metrics**: Track new member enrollments over time periods
+- **🆕 Activity Statistics**: Monitor communication encounters and program engagement
 - **Responsive Design**: Works on desktop and mobile devices
 
 ## 🏗️ Architecture
@@ -34,8 +40,9 @@ A comprehensive web application for managing hypertension prevention programs sp
 - **Runtime**: Node.js
 - **Framework**: Express.js
 - **Language**: TypeScript
-- **Database**: PostgreSQL
+- **Database**: SQLite (better-sqlite3)
 - **ORM**: Drizzle ORM
+- **🆕 Authentication**: JWT with bcrypt password hashing
 - **Validation**: Zod
 - **API Design**: RESTful
 
@@ -132,6 +139,11 @@ pnpm run dev
 
 ## 📊 API Endpoints
 
+### Authentication
+- `POST /api/auth/register` - Register new user
+- `POST /api/auth/login` - User login
+- `GET /api/auth/profile` - Get current user profile
+
 ### Members
 - `GET /api/members` - List all members
 - `GET /api/members/:id` - Get specific member
@@ -160,6 +172,22 @@ pnpm run dev
 - `GET /api/analytics/engagement` - Engagement metrics
 - `GET /api/analytics/equity` - Equity metrics
 - `GET /api/analytics/impact` - Program impact
+
+### 🆕 Super Admin (Requires super_admin role)
+- `GET /api/admin/dashboard-overview` - Comprehensive dashboard metrics
+- `GET /api/admin/daily-readings` - Daily BP readings by union
+- `GET /api/admin/enrollment-metrics` - Enrollment statistics with time filtering
+- `GET /api/admin/activity-stats` - Activity statistics by union
+- `GET /api/admin/recent-readings-detailed` - Detailed readings with member info
+
+## 🔐 Demo Credentials
+
+The application comes with pre-seeded demo accounts for testing:
+
+- **Super Admin**: admin@example.com / admin123
+- **Regular User**: user@example.com / user123
+
+Access the login page at: http://localhost:5173/login
 
 ## 🏥 HTN Classification
 
