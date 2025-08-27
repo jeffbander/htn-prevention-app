@@ -53,7 +53,7 @@ const COMMUNICATION_COLORS = {
 function EncounterForm({ encounter, onSuccess, onCancel }) {
   const [formData, setFormData] = useState({
     memberId: encounter?.memberId || '',
-    communicationType: encounter?.communicationType || '',
+    communicationType: encounter?.communicationType || 'Phone',
     topic: encounter?.topic || '',
     content: encounter?.content || '',
     callStatus: encounter?.callStatus || '',
@@ -301,8 +301,8 @@ function EncounterRow({ encounter, onEdit, onDelete }) {
 export default function Encounters() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingEncounter, setEditingEncounter] = useState(null);
-  const [filterType, setFilterType] = useState('');
-  const [filterStatus, setFilterStatus] = useState('');
+  const [filterType, setFilterType] = useState('all');
+  const [filterStatus, setFilterStatus] = useState('all');
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -331,8 +331,8 @@ export default function Encounters() {
   });
 
   const filteredEncounters = encounters?.filter(encounter => {
-    const matchesType = !filterType || encounter.communicationType === filterType;
-    const matchesStatus = !filterStatus || 
+    const matchesType = filterType === 'all' || encounter.communicationType === filterType;
+    const matchesStatus = filterStatus === 'all' || 
       (filterStatus === 'completed' && encounter.isCompleted) ||
       (filterStatus === 'pending' && !encounter.isCompleted);
     
@@ -485,7 +485,7 @@ export default function Encounters() {
                   <SelectValue placeholder="All types" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All types</SelectItem>
+                  <SelectItem value="all">All types</SelectItem>
                   <SelectItem value="Phone">Phone</SelectItem>
                   <SelectItem value="Text">Text</SelectItem>
                   <SelectItem value="Email">Email</SelectItem>
@@ -500,7 +500,7 @@ export default function Encounters() {
                   <SelectValue placeholder="All statuses" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All statuses</SelectItem>
+                  <SelectItem value="all">All statuses</SelectItem>
                   <SelectItem value="completed">Completed</SelectItem>
                   <SelectItem value="pending">Pending</SelectItem>
                 </SelectContent>

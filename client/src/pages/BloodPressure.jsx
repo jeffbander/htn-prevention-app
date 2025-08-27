@@ -267,7 +267,7 @@ function ReadingRow({ reading, onEdit, onDelete }) {
 export default function BloodPressure() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingReading, setEditingReading] = useState(null);
-  const [filterStatus, setFilterStatus] = useState('');
+  const [filterStatus, setFilterStatus] = useState('all');
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -296,7 +296,7 @@ export default function BloodPressure() {
   });
 
   const filteredReadings = readings?.filter(reading => {
-    return !filterStatus || reading.htnStatus === filterStatus;
+    return filterStatus === 'all' || reading.htnStatus === filterStatus;
   }) || [];
 
   const handleEdit = (reading) => {
@@ -449,7 +449,7 @@ export default function BloodPressure() {
                 <SelectValue placeholder="All statuses" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All statuses</SelectItem>
+                <SelectItem value="all">All statuses</SelectItem>
                 <SelectItem value="Normal">Normal</SelectItem>
                 <SelectItem value="Elevated">Elevated</SelectItem>
                 <SelectItem value="Stage 1">Stage 1</SelectItem>

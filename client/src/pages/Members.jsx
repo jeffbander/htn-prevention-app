@@ -40,8 +40,8 @@ function MemberForm({ member, onSuccess, onCancel }) {
     firstName: member?.firstName || '',
     lastName: member?.lastName || '',
     dateOfBirth: member?.dateOfBirth ? format(new Date(member.dateOfBirth), 'yyyy-MM-dd') : '',
-    gender: member?.gender || '',
-    union: member?.union || ''
+    gender: member?.gender || 'Male',
+    union: member?.union || 'Firefighters'
   });
 
   const { toast } = useToast();
@@ -216,7 +216,7 @@ function MemberRow({ member, onEdit, onDelete }) {
 
 export default function Members() {
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedUnion, setSelectedUnion] = useState('');
+  const [selectedUnion, setSelectedUnion] = useState('all');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingMember, setEditingMember] = useState(null);
 
@@ -252,7 +252,7 @@ export default function Members() {
       member.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       member.employeeId.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesUnion = !selectedUnion || member.union === selectedUnion;
+    const matchesUnion = selectedUnion === 'all' || member.union === selectedUnion;
     
     return matchesSearch && matchesUnion;
   }) || [];
@@ -348,7 +348,7 @@ export default function Members() {
                   <SelectValue placeholder="All unions" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All unions</SelectItem>
+                  <SelectItem value="all">All unions</SelectItem>
                   <SelectItem value="Firefighters">Firefighters</SelectItem>
                   <SelectItem value="Police">Police</SelectItem>
                   <SelectItem value="EMS">EMS</SelectItem>
