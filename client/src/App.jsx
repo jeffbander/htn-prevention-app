@@ -9,6 +9,7 @@ import Encounters from '@/pages/Encounters';
 import Analytics from '@/pages/Analytics';
 import Login from '@/pages/Login';
 import AdminDashboard from '@/pages/AdminDashboard';
+import BluetoothDiagnostic from '@/pages/BluetoothDiagnostic';
 import './App.css';
 
 const queryClient = new QueryClient({
@@ -37,6 +38,7 @@ function App() {
                   <Route path="/blood-pressure" element={<BloodPressure />} />
                   <Route path="/encounters" element={<Encounters />} />
                   <Route path="/analytics" element={<Analytics />} />
+                  <Route path="/bluetooth-diagnostic" element={<BluetoothDiagnostic />} />
                 </Routes>
               </Layout>
             } />
